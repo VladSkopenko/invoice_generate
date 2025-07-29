@@ -36,8 +36,8 @@ class InvoiceGenerator:
     TOTALS_RIGHT_X = 590
     
 
-    TOTALS_START_X = 300
-    TOTALS_END_X = 580
+    TOTALS_START_X = 300  # Буде розраховано динамічно
+    TOTALS_END_X = 580    # Буде розраховано динамічно
     
     SECTION_LOGO_OFFSET = 70
     SECTION_COMPANY_OFFSET = 5
@@ -50,7 +50,7 @@ class InvoiceGenerator:
     
 
     TABLE_HEADERS = ["Опис", "Кількість", "Ціна за одиницю", "ПДВ", "Сума"]
-    TABLE_COL_WIDTHS = [250, 80, 100, 35, 115]
+    TABLE_COL_WIDTHS = [250, 68, 105, 35, 65]
     TABLE_ROW_HEIGHT = 20 
     TABLE_DESCRIPTION_WRAP_WIDTH = 240
     
@@ -214,15 +214,17 @@ class InvoiceGenerator:
         
         table = Table(table_data, colWidths=self.TABLE_COL_WIDTHS)
         table.setStyle(TableStyle([
-            ('ALIGN', (0,0), (-1,0), 'LEFT'),
-            ('ALIGN', (0,1), (-1,-1), 'LEFT'),
+            ('ALIGN', (0,0), (0,0), 'LEFT'),  # Опис заголовок по правому краю
+            ('ALIGN', (1,0), (-1,0), 'RIGHT'),   # Решта заголовків по лівому краю
+            ('ALIGN', (0,1), (0,-1), 'RIGHT'),  # Опис дані по правому краю
+            ('ALIGN', (1,1), (-1,-1), 'RIGHT'),  # Решта даних по лівому краю
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('FONTNAME', (0,0), (-1,0), self.bold_font),
             ('FONTSIZE', (0,0), (-1,0), self.FONT_SIZE_NORMAL),
             ('FONTNAME', (0,1), (-1,-1), self.normal_font),
             ('FONTSIZE', (0,1), (-1,-1), self.FONT_SIZE_SMALL),
-            ('LEFTPADDING', (0,0), (-1,-1), 8),
-            ('RIGHTPADDING', (0,0), (-1,-1), 8),
+            ('LEFTPADDING', (0,0), (-1,-1), 6),
+            ('RIGHTPADDING', (0,0), (-1,-1), 6),
             ('TOPPADDING', (0,0), (-1,-1), 6),
             ('BOTTOMPADDING', (0,0), (-1,-1), 6),
         ]))
@@ -235,7 +237,11 @@ class InvoiceGenerator:
         table_y = base_table_y - table_height + 30 
         
 
-        table.drawOn(canvas, self.MARGIN_LEFT - 3, table_y)
+        # Розраховуємо центр таблиці для однакових відступів
+        table_width = sum(self.TABLE_COL_WIDTHS)
+        page_center = A4[0] / 2
+        table_center_x = page_center - table_width / 2
+        table.drawOn(canvas, table_center_x, table_y)
         
         new_y = table_y - self.SPACING_LARGE
         
@@ -247,25 +253,34 @@ class InvoiceGenerator:
         
         totals_y = table_end_y
         
-        canvas.line(self.TOTALS_START_X, totals_y, self.TOTALS_END_X, totals_y)
+        # Розраховуємо координати для підсумків відповідно до таблиці
+        table_width = sum(self.TABLE_COL_WIDTHS)
+        page_center = A4[0] / 2
+        table_center_x = page_center - table_width / 2
+        
+        # Координати для підсумків (відповідають колонкам таблиці)
+        totals_start_x = table_center_x + self.TABLE_COL_WIDTHS[0] + self.TABLE_COL_WIDTHS[1]  # Початок від колонки "Кількість"
+        totals_end_x = table_center_x + table_width  # Кінець на колонці "Сума"
+        
+        canvas.line(totals_start_x, totals_y, totals_end_x, totals_y)
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.TOTALS_START_X, totals_y - self.SPACING_LARGE, f"Сума без ПДВ:")
+        canvas.drawString(totals_start_x, totals_y - self.SPACING_LARGE, f"Сума без ПДВ:")
         canvas.setFillColor(self.text_color)
-        canvas.drawString(self.TOTALS_START_X, totals_y - self.SPACING_LARGE * 2, f"ПДВ {vat_rate}%:")
+        canvas.drawString(totals_start_x, totals_y - self.SPACING_LARGE * 2, f"ПДВ {vat_rate}%:")
         
-        canvas.line(self.TOTALS_START_X, totals_y - self.SPACING_LARGE * 2.5, self.TOTALS_END_X, totals_y - self.SPACING_LARGE * 2.5)
+        canvas.line(totals_start_x, totals_y - self.SPACING_LARGE * 2.5, totals_end_x, totals_y - self.SPACING_LARGE * 2.5)
         
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
-        canvas.drawString(self.TOTALS_START_X, totals_y - self.SPACING_LARGE * 3.5, "Всього:")
+        canvas.drawString(totals_start_x, totals_y - self.SPACING_LARGE * 3.5, "Всього:")
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.text_color)
-        canvas.drawRightString(self.TOTALS_END_X, totals_y - self.SPACING_LARGE, f"$ {subtotal:.2f}")
-        canvas.drawRightString(self.TOTALS_END_X, totals_y - self.SPACING_LARGE * 2, f"$ {total_vat:.2f}")
+        canvas.drawRightString(totals_end_x, totals_y - self.SPACING_LARGE, f"$ {subtotal:.2f}")
+        canvas.drawRightString(totals_end_x, totals_y - self.SPACING_LARGE * 2, f"$ {total_vat:.2f}")
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
-        canvas.drawRightString(self.TOTALS_END_X, totals_y - self.SPACING_LARGE * 3.5, f"$ {total:.2f}")
+        canvas.drawRightString(totals_end_x, totals_y - self.SPACING_LARGE * 3.5, f"$ {total:.2f}")
         
         return totals_y - self.SPACING_LARGE * 4
 
