@@ -36,8 +36,8 @@ class InvoiceGenerator:
     TOTALS_RIGHT_X = 590
     
 
-    TOTALS_START_X = 300  # Буде розраховано динамічно
-    TOTALS_END_X = 580    # Буде розраховано динамічно
+    TOTALS_START_X = 300
+    TOTALS_END_X = 580
     
     SECTION_LOGO_OFFSET = 70
     SECTION_COMPANY_OFFSET = 5
@@ -70,6 +70,13 @@ class InvoiceGenerator:
         self.primary_color = colors.HexColor("#800080")
         self.text_color = colors.black
         self.white_color = colors.white
+    
+    @property
+    def table_layout(self):
+        table_width = sum(self.TABLE_COL_WIDTHS)
+        page_center = A4[0] / 2
+        table_center_x = page_center - table_width / 2
+        return table_width, table_center_x
     
     def register_times_fonts(self):
         if self.fonts_registered:
@@ -132,55 +139,70 @@ class InvoiceGenerator:
         c.save()
     
     def _draw_logo(self, canvas, height):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFont(self.title_font, self.FONT_SIZE_TITLE)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.MARGIN_LEFT, height - self.MARGIN_TOP, self.LOGO_TEXT)
-        canvas.line(self.MARGIN_LEFT, height - self.MARGIN_TOP - 20, A4[0] - self.MARGIN_RIGHT, height - self.MARGIN_TOP - 20)
+        canvas.drawString(table_center_x, height - self.MARGIN_TOP, self.LOGO_TEXT)
+        
+        top_line_start = table_center_x
+        top_line_end = table_center_x + table_width
+        
+        canvas.line(top_line_start, height - self.MARGIN_TOP - 20, top_line_end, height - self.MARGIN_TOP - 20)
         return height - self.SECTION_LOGO_OFFSET
     
     def _draw_company_info_seller(self, canvas, name, edprou, address, country, start_y):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.COLUMN_LEFT_X, start_y + self.SECTION_COMPANY_OFFSET, "Продавець:")
+        canvas.drawString(table_center_x, start_y + self.SECTION_COMPANY_OFFSET, "Продавець:")
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.text_color)
         
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SPACING_SMALL, name)
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM, f"ЄДРПОУ: {edprou}")
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 2, address)
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 3, country)
+        canvas.drawString(table_center_x, start_y - self.SPACING_SMALL, name)
+        canvas.drawString(table_center_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM, f"ЄДРПОУ: {edprou}")
+        canvas.drawString(table_center_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 2, address)
+        canvas.drawString(table_center_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 3, country)
     
     def _draw_company_info_buyer(self, canvas, name, edprou, address, country, start_y):
+        table_width, table_center_x = self.table_layout
+        buyer_x = table_center_x + table_width - 250 
+        
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y + self.SECTION_COMPANY_OFFSET, "Покупець:")
+        canvas.drawString(buyer_x, start_y + self.SECTION_COMPANY_OFFSET, "Покупець:")
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.text_color)
         
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SPACING_SMALL, name)
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM, f"ЄДРПОУ: {edprou}")
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 2, address)
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 3, country)
+        canvas.drawString(buyer_x, start_y - self.SPACING_SMALL, name)
+        canvas.drawString(buyer_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM, f"ЄДРПОУ: {edprou}")
+        canvas.drawString(buyer_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 2, address)
+        canvas.drawString(buyer_x, start_y - self.SPACING_SMALL - self.SPACING_MEDIUM * 3, country)
     
     def _draw_invoice_header(self, canvas, invoice_number, company_start_y):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFont(self.title_font, self.FONT_SIZE_HEADER)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.MARGIN_LEFT, company_start_y - self.SECTION_INVOICE_OFFSET, f"Рахунок-фактура {invoice_number}")
+        canvas.drawString(table_center_x, company_start_y - self.SECTION_INVOICE_OFFSET, f"Рахунок-фактура {invoice_number}")
     
     def _draw_invoice_details(self, canvas, invoice_date, due_date, source, start_y):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFillColor(self.text_color)
         
         canvas.setFont(self.bold_font, self.FONT_SIZE_NORMAL)
-        canvas.drawString(self.MARGIN_LEFT, start_y - self.SECTION_DETAILS_OFFSET, "Дата:")
-        canvas.drawString(200, start_y - self.SECTION_DETAILS_OFFSET, "Термін оплати:")
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SECTION_DETAILS_OFFSET, "Джерело:")
+        canvas.drawString(table_center_x, start_y - self.SECTION_DETAILS_OFFSET, "Дата:")
+        canvas.drawString(table_center_x + table_width / 3, start_y - self.SECTION_DETAILS_OFFSET, "Термін оплати:")
+        canvas.drawString(table_center_x + table_width * 2 / 3, start_y - self.SECTION_DETAILS_OFFSET, "Джерело:")
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
-        canvas.drawString(self.MARGIN_LEFT, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, invoice_date)
-        canvas.drawString(200, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, due_date)
-        canvas.drawString(self.COLUMN_RIGHT_X, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, source)
+        canvas.drawString(table_center_x, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, invoice_date)
+        canvas.drawString(table_center_x + table_width / 3, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, due_date)
+        canvas.drawString(table_center_x + table_width * 2 / 3, start_y - self.SECTION_DETAILS_OFFSET - self.SPACING_LARGE, source)
     
     def _draw_items_table(self, canvas, line_items, vat_rate, start_y):
         subtotal = 0
@@ -214,10 +236,10 @@ class InvoiceGenerator:
         
         table = Table(table_data, colWidths=self.TABLE_COL_WIDTHS)
         table.setStyle(TableStyle([
-            ('ALIGN', (0,0), (0,0), 'LEFT'),  # Опис заголовок по правому краю
-            ('ALIGN', (1,0), (-1,0), 'RIGHT'),   # Решта заголовків по лівому краю
-            ('ALIGN', (0,1), (0,-1), 'RIGHT'),  # Опис дані по правому краю
-            ('ALIGN', (1,1), (-1,-1), 'RIGHT'),  # Решта даних по лівому краю
+            ('ALIGN', (0,0), (0,0), 'LEFT'),
+            ('ALIGN', (1,0), (-1,0), 'RIGHT'),
+            ('ALIGN', (0,1), (0,-1), 'RIGHT'),
+            ('ALIGN', (1,1), (-1,-1), 'RIGHT'),
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('FONTNAME', (0,0), (-1,0), self.bold_font),
             ('FONTSIZE', (0,0), (-1,0), self.FONT_SIZE_NORMAL),
@@ -237,10 +259,7 @@ class InvoiceGenerator:
         table_y = base_table_y - table_height + 30 
         
 
-        # Розраховуємо центр таблиці для однакових відступів
-        table_width = sum(self.TABLE_COL_WIDTHS)
-        page_center = A4[0] / 2
-        table_center_x = page_center - table_width / 2
+        table_width, table_center_x = self.table_layout
         table.drawOn(canvas, table_center_x, table_y)
         
         new_y = table_y - self.SPACING_LARGE
@@ -253,14 +272,10 @@ class InvoiceGenerator:
         
         totals_y = table_end_y
         
-        # Розраховуємо координати для підсумків відповідно до таблиці
-        table_width = sum(self.TABLE_COL_WIDTHS)
-        page_center = A4[0] / 2
-        table_center_x = page_center - table_width / 2
+        table_width, table_center_x = self.table_layout
         
-        # Координати для підсумків (відповідають колонкам таблиці)
-        totals_start_x = table_center_x + self.TABLE_COL_WIDTHS[0] + self.TABLE_COL_WIDTHS[1]  # Початок від колонки "Кількість"
-        totals_end_x = table_center_x + table_width  # Кінець на колонці "Сума"
+        totals_start_x = table_center_x + self.TABLE_COL_WIDTHS[0]
+        totals_end_x = table_center_x + table_width
         
         canvas.line(totals_start_x, totals_y, totals_end_x, totals_y)
         
@@ -286,29 +301,38 @@ class InvoiceGenerator:
 
     
     def _draw_payment_communication(self, canvas, invoice_number, totals_end_y):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
-        canvas.drawString(self.MARGIN_LEFT, totals_end_y - self.SPACING_LARGE, "Призначення платежу: ")
+        canvas.drawString(table_center_x, totals_end_y - self.SPACING_LARGE, "Призначення платежу: ")
         canvas.setFont(self.bold_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.text_color)
-        canvas.drawString(185, totals_end_y - self.SPACING_LARGE, invoice_number)
+        canvas.drawString(table_center_x + 135, totals_end_y - self.SPACING_LARGE, invoice_number)
     
 
     def _draw_bank_details(self, canvas, bank_name, bank_mfo, bank_address, bank_swift, bank_iban, start_y):
+        table_width, table_center_x = self.table_layout
+        
         canvas.setFont(self.bold_font, self.FONT_SIZE_SMALL)
         canvas.setFillColor(self.primary_color)
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET, "Банківські реквізити:")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET, "Банківські реквізити:")
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_FOOTER)
         canvas.setFillColor(self.text_color)
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE, f"Банк: {bank_name}")
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 2, f"МФО: {bank_mfo}")
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 3, f"Адреса: {bank_address}")
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 4, f"SWIFT: {bank_swift}")
-        canvas.drawString(self.COLUMN_LEFT_X, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 5, f"IBAN: {bank_iban}")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE, f"Банк: {bank_name}")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 2, f"МФО: {bank_mfo}")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 3, f"Адреса: {bank_address}")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 4, f"SWIFT: {bank_swift}")
+        canvas.drawString(table_center_x, start_y - self.SECTION_BANK_OFFSET - self.SPACING_LARGE * 5, f"IBAN: {bank_iban}")
 
     
     def _draw_footer(self, canvas, width):
-        canvas.line(self.MARGIN_LEFT, self.MARGIN_BOTTOM, width - self.MARGIN_RIGHT, self.MARGIN_BOTTOM)
+        table_width, table_center_x = self.table_layout
+        
+        footer_line_start = table_center_x
+        footer_line_end = table_center_x + table_width
+        
+        canvas.line(footer_line_start, self.MARGIN_BOTTOM, footer_line_end, self.MARGIN_BOTTOM)
         
         canvas.setFont(self.normal_font, self.FONT_SIZE_FOOTER)
         canvas.setFillColor(self.text_color)
