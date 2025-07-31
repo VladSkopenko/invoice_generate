@@ -52,6 +52,35 @@ class InvoiceGenerator:
     FOOTER_TEXT = "Рахунок створений платформою https://inbulk.com"
     LOGO_TEXT = "In Bulk"
 
+    CURRENCY_MAPPING = {
+        "USD": "$",
+        "UAH": "₴",
+        "EUR": "€",
+        "GBP": "£",
+        "JPY": "¥",
+        "PLN": "zł",
+        "CZK": "Kč",
+        "HUF": "Ft",    
+        "RON": "lei",
+        "BGN": "лв", 
+        "HRK": "kn",  
+        "DKK": "kr",
+        "SEK": "kr", 
+        "NOK": "kr",   
+        "CHF": "CHF",   
+        "CNY": "¥",  
+        "INR": "₹",   
+        "BRL": "R$",   
+        "CAD": "C$",
+        "AUD": "A$",
+        "NZD": "NZ$",
+        "KRW": "₩",      
+        "SGD": "S$",     
+        "HKD": "HK$",    
+        "BTC": "₿",
+        "ETH": "Ξ",
+    }
+
     def __init__(self):
         self.fonts_registered = False
         self.register_times_fonts()
@@ -94,6 +123,9 @@ class InvoiceGenerator:
 
         self.fonts_registered = True
 
+    def get_currency_symbol(self, currency_code):
+        return self.CURRENCY_MAPPING.get(currency_code.upper(), currency_code)
+
     def generate_invoice(
         self,
         filename: str,
@@ -116,10 +148,12 @@ class InvoiceGenerator:
         source: str,
         line_items=None,
         vat_rate=20,
+        currency="USD",
     ):
 
         c = canvas.Canvas(filename, pagesize=A4)
         width, height = A4
+        currency_symbol = self.get_currency_symbol(currency)
 
         company_start_y = self._draw_logo(canvas=c, height=height)
         self._draw_company_info_seller(
@@ -150,9 +184,9 @@ class InvoiceGenerator:
         self._draw_invoice_header(canvas=c, invoice_number=invoice_number, start_y=company_start_y)
         self._draw_invoice_details(canvas=c, invoice_date=invoice_date, due_date=due_date, source=source, start_y=company_start_y)
         subtotal, total_vat, table_end_y = self._draw_items_table(
-            canvas=c, line_items=line_items, vat_rate=vat_rate, start_y=company_start_y
+            canvas=c, line_items=line_items, vat_rate=vat_rate, currency=currency_symbol, start_y=company_start_y
         )
-        totals_end_y = self._draw_totals(canvas=c, subtotal=subtotal, total_vat=total_vat, vat_rate=vat_rate, table_end_y=table_end_y)
+        totals_end_y = self._draw_totals(canvas=c, subtotal=subtotal, total_vat=total_vat, vat_rate=vat_rate, currency=currency_symbol, table_end_y=table_end_y)
         self._draw_payment_communication(canvas=c, invoice_number=invoice_number, totals_end_y=totals_end_y)
         self._draw_footer(canvas=c, width=width)
 
@@ -279,7 +313,7 @@ class InvoiceGenerator:
             source,
         )
 
-    def _draw_items_table(self, canvas, line_items, vat_rate, start_y):
+    def _draw_items_table(self, canvas, line_items, vat_rate, currency, start_y):
         subtotal = 0
         table_data = [self.TABLE_HEADERS]
 
@@ -305,7 +339,7 @@ class InvoiceGenerator:
                     f"{quantity:.2f}",
                     f"{unit_price:.2f}",
                     f"{vat_rate}%",
-                    f"$ {amount:.2f}",
+                    f"{currency} {amount:.2f}",
                 ]
             )
 
@@ -344,7 +378,7 @@ class InvoiceGenerator:
         total_vat = subtotal * (vat_rate / 100)
         return subtotal, total_vat, new_y
 
-    def _draw_totals(self, canvas, subtotal, total_vat, vat_rate, table_end_y):
+    def _draw_totals(self, canvas, subtotal, total_vat, vat_rate, currency, table_end_y):
         total = subtotal + total_vat
 
         totals_y = table_end_y
@@ -381,14 +415,14 @@ class InvoiceGenerator:
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.setFillColor(self.text_color)
         canvas.drawRightString(
-            totals_end_x, totals_y - self.SPACING_LARGE, f"$ {subtotal:.2f}"
+            totals_end_x, totals_y - self.SPACING_LARGE, f"{currency} {subtotal:.2f}"
         )
         canvas.drawRightString(
-            totals_end_x, totals_y - self.SPACING_LARGE * 2, f"$ {total_vat:.2f}"
+            totals_end_x, totals_y - self.SPACING_LARGE * 2, f"{currency} {total_vat:.2f}"
         )
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
         canvas.drawRightString(
-            totals_end_x, totals_y - self.SPACING_LARGE * 3.5, f"$ {total:.2f}"
+            totals_end_x, totals_y - self.SPACING_LARGE * 3.5, f"{currency} {total:.2f}"
         )
 
         return totals_y - self.SPACING_LARGE * 4
@@ -505,4 +539,71 @@ if __name__ == "__main__":
             },
         ],
         vat_rate=20,
+        currency="UAH",
+    )
+
+
+    generator.generate_invoice(
+        filename="invoice_usd.pdf",
+        company_seller_name="ТОВ 'Технології Майбутнього'",
+        company_seller_edprou="12345678",
+        company_seller_address="м. Київ, вул. Велика Васильківська, 100",
+        company_seller_country="Україна",
+        bank_name_seller="ПриватБанк",
+        bank_mfo_seller="305299",
+        bank_address_seller="м. Дніпро, вул. Набережна Перемоги, 50",
+        bank_swift_seller="PBANUA2X",
+        bank_iban_seller="UA123456789012345678901234567",
+        company_buyer_name="ТОВ 'Інноваційні Рішення'",
+        client_buyer_edprou="87654321",
+        client_buyer_address="м. Львів, вул. Свободи, 15",
+        client_buyer_country="Україна",
+        invoice_number="РФ/2024/00002",
+        invoice_date="15.01.2024",
+        due_date="20.01.2024",
+        source="S00002",
+        line_items=[
+            {
+                "description": "Програмне забезпечення для управління проектами",
+                "quantity": 5,
+                "unit_price": 100,
+            },
+            {
+                "description": "Технічна підтримка (місяць)",
+                "quantity": 1,
+                "unit_price": 500,
+            },
+        ],
+        vat_rate=20,
+        currency="USD",
+    )
+
+    generator.generate_invoice(
+        filename="invoice_eur.pdf",
+        company_seller_name="ТОВ 'Технології Майбутнього'",
+        company_seller_edprou="12345678",
+        company_seller_address="м. Київ, вул. Велика Васильківська, 100",
+        company_seller_country="Україна",
+        bank_name_seller="ПриватБанк",
+        bank_mfo_seller="305299",
+        bank_address_seller="м. Дніпро, вул. Набережна Перемоги, 50",
+        bank_swift_seller="PBANUA2X",
+        bank_iban_seller="UA123456789012345678901234567",
+        company_buyer_name="ТОВ 'Інноваційні Рішення'",
+        client_buyer_edprou="87654321",
+        client_buyer_address="м. Львів, вул. Свободи, 15",
+        client_buyer_country="Україна",
+        invoice_number="РФ/2024/00003",
+        invoice_date="15.01.2024",
+        due_date="20.01.2024",
+        source="S00003",
+        line_items=[
+            {
+                "description": "Консультаційні послуги",
+                "quantity": 10,
+                "unit_price": 50,
+            },
+        ],
+        vat_rate=20,
+        currency="EUR", 
     )
