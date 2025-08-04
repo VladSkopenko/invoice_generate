@@ -14,7 +14,7 @@ from .components.footer import FooterRenderer
 
 
 class InvoiceRenderer:
-    """Основной рендерер счета-фактуры"""
+
     
     def __init__(self):
         self.settings = InvoiceSettings()
@@ -35,22 +35,12 @@ class InvoiceRenderer:
             invoice_data: Данные счета
             filename: Имя файла для сохранения
         """
-        # Валидация данных
-        errors = self.validation_service.validate_invoice_data(invoice_data)
-        if errors:
-            raise ValueError(f"Ошибки валидации: {', '.join(errors)}")
-
-        # Регистрация шрифтов
         self.font_manager.register_times_fonts()
 
-        # Создание canvas
         canvas_obj = canvas.Canvas(filename, pagesize=self.settings.PAGE_SIZE)
         width, height = self.settings.PAGE_WIDTH, self.settings.PAGE_HEIGHT
 
-        # Получение символа валюты
         currency_symbol = CurrencyMapping.get_symbol(invoice_data.currency)
-
-        # Отрисовка компонентов
         company_start_y = self.header_renderer.draw_logo(canvas_obj, height)
         
         self.company_renderer.draw_seller(canvas_obj, invoice_data.seller, company_start_y)
@@ -92,7 +82,6 @@ class InvoiceRenderer:
 
         canvas_obj.setFillColor(self.settings.TEXT_COLOR)
 
-        # Заголовки
         canvas_obj.setFont(self.settings.BOLD_FONT, self.settings.FONT_SIZE_NORMAL)
         canvas_obj.drawString(
             table_center_x, start_y - self.settings.SECTION_DETAILS_OFFSET, "Дата:"
@@ -108,7 +97,6 @@ class InvoiceRenderer:
             "Джерело:",
         )
 
-        # Значения
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_NORMAL)
         canvas_obj.drawString(
             table_center_x,

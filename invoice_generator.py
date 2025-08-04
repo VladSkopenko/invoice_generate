@@ -213,7 +213,7 @@ class InvoiceGenerator:
     def _draw_company_info_seller(
         self, canvas, name, edprou, address, country, start_y
     ):
-        table_width, table_center_x = self.table_layout
+        _, table_center_x = self.table_layout
 
         canvas.setFont(self.bold_font, self.FONT_SIZE_SUBHEADER)
         canvas.setFillColor(self.primary_color)
@@ -266,7 +266,7 @@ class InvoiceGenerator:
         )
 
     def _draw_invoice_header(self, canvas, invoice_number, start_y):
-        table_width, table_center_x = self.table_layout
+        _, table_center_x = self.table_layout
 
         canvas.setFont(self.title_font, self.FONT_SIZE_HEADER)
         canvas.setFillColor(self.primary_color)
@@ -370,7 +370,7 @@ class InvoiceGenerator:
         base_table_y = start_y - self.SECTION_TABLE_OFFSET
         table_y = base_table_y - table_height + 30
 
-        table_width, table_center_x = self.table_layout
+        _, table_center_x = self.table_layout
         table.drawOn(canvas, table_center_x, table_y)
 
         new_y = table_y - self.SPACING_LARGE
@@ -428,7 +428,7 @@ class InvoiceGenerator:
         return totals_y - self.SPACING_LARGE * 4
 
     def _draw_payment_communication(self, canvas, invoice_number, totals_end_y):
-        table_width, table_center_x = self.table_layout
+        _, table_center_x = self.table_layout
 
         canvas.setFont(self.normal_font, self.FONT_SIZE_NORMAL)
         canvas.drawString(
@@ -443,7 +443,7 @@ class InvoiceGenerator:
     def _draw_bank_details(
         self, canvas, bank_name, bank_mfo, bank_address, bank_swift, bank_iban, start_y
     ):
-        table_width, table_center_x = self.table_layout
+        _, table_center_x = self.table_layout
 
         canvas.setFont(self.bold_font, self.FONT_SIZE_SMALL)
         canvas.setFillColor(self.primary_color)

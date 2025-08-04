@@ -1,6 +1,4 @@
 class CurrencyMapping:
-    """Маппинг кодов валют к символам"""
-    
     CURRENCY_MAPPING = {
         "USD": "$",     
         "UAH": "₴",     

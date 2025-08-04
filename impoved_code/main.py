@@ -1,7 +1,6 @@
 from typing import List, Dict, Any
 from .models.invoice_data import InvoiceData, CompanyInfo, BankDetails, LineItem
 from .renderers.invoice_renderer import InvoiceRenderer
-from .services.validation import ValidationService
 
 
 class InvoiceGenerator:
@@ -9,7 +8,6 @@ class InvoiceGenerator:
     
     def __init__(self):
         self.renderer = InvoiceRenderer()
-        self.validation_service = ValidationService()
 
     def generate_invoice(self, **kwargs) -> None:
         """
