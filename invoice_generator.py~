@@ -543,3 +543,68 @@ if __name__ == "__main__":
         currency="UAH",
     )
 
+
+    generator.generate_invoice(
+        filename="invoice_usd.pdf",
+        company_seller_name="ТОВ 'Технології Майбутнього'",
+        company_seller_edprou="12345678",
+        company_seller_address="м. Київ, вул. Велика Васильківська, 100",
+        company_seller_country="Україна",
+        bank_name_seller="ПриватБанк",
+        bank_mfo_seller="305299",
+        bank_address_seller="м. Дніпро, вул. Набережна Перемоги, 50",
+        bank_swift_seller="PBANUA2X",
+        bank_iban_seller="UA123456789012345678901234567",
+        company_buyer_name="ТОВ 'Інноваційні Рішення'",
+        client_buyer_edprou="87654321",
+        client_buyer_address="м. Львів, вул. Свободи, 15",
+        client_buyer_country="Україна",
+        invoice_number="РФ/2024/00002",
+        invoice_date="15.01.2024",
+        due_date="20.01.2024",
+        source="S00002",
+        line_items=[
+            {
+                "description": "Програмне забезпечення для управління проектами",
+                "quantity": 5,
+                "unit_price": 100,
+            },
+            {
+                "description": "Технічна підтримка (місяць)",
+                "quantity": 1,
+                "unit_price": 500,
+            },
+        ],
+        vat_rate=20,
+        currency="USD",
+    )
+
+    generator.generate_invoice(
+        filename="invoice_eur.pdf",
+        company_seller_name="ТОВ 'Технології Майбутнього'",
+        company_seller_edprou="12345678",
+        company_seller_address="м. Київ, вул. Велика Васильківська, 100",
+        company_seller_country="Україна",
+        bank_name_seller="ПриватБанк",
+        bank_mfo_seller="305299",
+        bank_address_seller="м. Дніпро, вул. Набережна Перемоги, 50",
+        bank_swift_seller="PBANUA2X",
+        bank_iban_seller="UA123456789012345678901234567",
+        company_buyer_name="ТОВ 'Інноваційні Рішення'",
+        client_buyer_edprou="87654321",
+        client_buyer_address="м. Львів, вул. Свободи, 15",
+        client_buyer_country="Україна",
+        invoice_number="РФ/2024/00003",
+        invoice_date="15.01.2024",
+        due_date="20.01.2024",
+        source="S00003",
+        line_items=[
+            {
+                "description": "Консультаційні послуги",
+                "quantity": 10,
+                "unit_price": 50,
+            },
+        ],
+        vat_rate=20,
+        currency="EUR", 
+    )
