@@ -2,15 +2,15 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from typing import List
 
-from ..config.settings import InvoiceSettings
-from ..config.currencies import CurrencyMapping
-from ..models.invoice_data import InvoiceData, LineItem
-from ..services.font_manager import FontManager
-from .components.header import HeaderRenderer
-from .components.company_info import CompanyInfoRenderer
-from .components.items_table import ItemsTableRenderer
-from .components.totals import TotalsRenderer
-from .components.footer import FooterRenderer
+from impoved_code.config.settings import InvoiceSettings
+from impoved_code.config.currencies import CurrencyMapping
+from impoved_code.models.invoice_data import InvoiceData, LineItem
+from impoved_code.services.font_manager import FontManager
+from impoved_code.renderers.components.header import HeaderRenderer
+from impoved_code.renderers.components.company_info import CompanyInfoRenderer
+from impoved_code.renderers.components.items_table import ItemsTableRenderer
+from impoved_code.renderers.components.totals import TotalsRenderer
+from impoved_code.renderers.components.footer import FooterRenderer
 
 
 class InvoiceRenderer:
@@ -20,7 +20,7 @@ class InvoiceRenderer:
         self.settings = InvoiceSettings()
         self.font_manager = FontManager()
         
-        # Компоненты рендеринга
+        # Rendering components
         self.header_renderer = HeaderRenderer(self.settings)
         self.company_renderer = CompanyInfoRenderer(self.settings)
         self.table_renderer = ItemsTableRenderer(self.settings)
@@ -29,11 +29,11 @@ class InvoiceRenderer:
 
     def render(self, invoice_data: InvoiceData, filename: str) -> None:
         """
-        Отрисовка счета-фактуры
+        Render invoice
         
         Args:
-            invoice_data: Данные счета
-            filename: Имя файла для сохранения
+            invoice_data: Invoice data
+            filename: Filename for saving
         """
         self.font_manager.register_times_fonts()
 
@@ -61,12 +61,12 @@ class InvoiceRenderer:
         self.footer_renderer.draw_payment_communication(canvas_obj, invoice_data.invoice_number, totals_end_y)
         self.footer_renderer.draw_footer(canvas_obj, width)
 
-        # Сохранение файла
+        # Save file
         canvas_obj.save()
 
     def _draw_invoice_header(self, canvas_obj: canvas.Canvas, invoice_number: str, start_y: float):
-        """Отрисовка заголовка счета"""
-        table_width, table_center_x = self.settings.get_table_layout()
+        """Draw invoice header"""
+        _, table_center_x = self.settings.get_table_layout()
 
         canvas_obj.setFont(self.settings.TITLE_FONT, self.settings.FONT_SIZE_HEADER)
         canvas_obj.setFillColor(self.settings.PRIMARY_COLOR)
@@ -76,8 +76,8 @@ class InvoiceRenderer:
             f"Рахунок-фактура {invoice_number}",
         )
 
-    def _draw_invoice_details(self, canvas_obj: canvas.Canvas, invoice_date: str, due_date: str, source: str, start_y: float):
-        """Отрисовка деталей счета"""
+    def _draw_invoice_details(self, canvas_obj: canvas.Canvas, invoice_date, due_date, source: str, start_y: float):
+        """Draw invoice details"""
         table_width, table_center_x = self.settings.get_table_layout()
 
         canvas_obj.setFillColor(self.settings.TEXT_COLOR)
@@ -98,18 +98,28 @@ class InvoiceRenderer:
         )
 
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_NORMAL)
+        
+        # Convert date objects to strings
+        invoice_date_str = invoice_date.strftime("%d.%m.%Y") if hasattr(invoice_date, 'strftime') else str(invoice_date)
+        due_date_str = due_date.strftime("%d.%m.%Y") if hasattr(due_date, 'strftime') else str(due_date)
+        
         canvas_obj.drawString(
             table_center_x,
             start_y - self.settings.SECTION_DETAILS_OFFSET - self.settings.SPACING_LARGE,
-            invoice_date,
+            invoice_date_str,
         )
         canvas_obj.drawString(
             table_center_x + table_width / 3,
             start_y - self.settings.SECTION_DETAILS_OFFSET - self.settings.SPACING_LARGE,
-            due_date,
+            due_date_str,
         )
         canvas_obj.drawString(
             table_center_x + table_width * 2 / 3,
             start_y - self.settings.SECTION_DETAILS_OFFSET - self.settings.SPACING_LARGE,
             source,
         ) 
+
+
+if __name__ == "__main__":
+    renderer = InvoiceRenderer()
+    renderer.render(InvoiceData.model_validate_json(open("invoice_data.json").read()), "invoice.pdf")

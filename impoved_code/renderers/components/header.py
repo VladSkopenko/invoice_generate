@@ -1,5 +1,5 @@
 from reportlab.pdfgen import canvas
-from ...config.settings import InvoiceSettings
+from impoved_code.config.settings import InvoiceSettings
 
 
 class HeaderRenderer:

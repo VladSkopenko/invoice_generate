@@ -4,34 +4,35 @@ from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.pagesizes import A4
 from typing import List
-from ...config.settings import InvoiceSettings
-from ...models.invoice_data import LineItem
+from decimal import Decimal
+from impoved_code.config.settings import InvoiceSettings
+from impoved_code.models.invoice_data import LineItem
 
 
 class ItemsTableRenderer:
-    """Рендерер таблицы товаров"""
+    """Renderer for items table"""
     
     def __init__(self, settings: InvoiceSettings):
         self.settings = settings
 
-    def draw(self, canvas_obj: canvas.Canvas, line_items: List[LineItem], vat_rate: float, currency: str, start_y: float):
+    def draw(self, canvas_obj: canvas.Canvas, line_items: List[LineItem], vat_rate: Decimal, currency: str, start_y: float):
         """
-        Отрисовка таблицы товаров
+        Draw items table
         
         Args:
-            canvas_obj: Canvas для отрисовки
-            line_items: Список товарных позиций
-            vat_rate: Ставка НДС
-            currency: Символ валюты
-            start_y: Начальная Y-координата
+            canvas_obj: Canvas for drawing
+            line_items: List of line items
+            vat_rate: VAT rate
+            currency: Currency symbol
+            start_y: Starting Y coordinate
             
         Returns:
             tuple: (subtotal, total_vat, new_y)
         """
-        subtotal = 0
+        subtotal = Decimal('0')
         table_data = [self.settings.TABLE_HEADERS]
 
-        # Стиль для описания товара
+        # Style for item description
         description_style = ParagraphStyle(
             name="DescriptionStyle",
             fontName=self.settings.NORMAL_FONT,
@@ -40,9 +41,9 @@ class ItemsTableRenderer:
             wordWrap="CJK",
         )
 
-        # Добавление товарных позиций в таблицу
+        # Add line items to table
         for item in line_items:
-            amount = item.get_amount()
+            amount = item.amount
             subtotal += amount
 
             description_paragraph = Paragraph(item.description, description_style)
@@ -57,7 +58,7 @@ class ItemsTableRenderer:
                 ]
             )
 
-        # Создание и стилизация таблицы
+        # Create and style table
         table = Table(table_data, colWidths=self.settings.TABLE_COL_WIDTHS)
         table.setStyle(
             TableStyle(
@@ -79,18 +80,18 @@ class ItemsTableRenderer:
             )
         )
 
-        # Расчет позиции таблицы
+        # Calculate table position
         table.wrapOn(canvas_obj, A4[0], A4[1])
         table_height = table._height
 
         base_table_y = start_y - self.settings.SECTION_TABLE_OFFSET
         table_y = base_table_y - table_height + 30
 
-        # Отрисовка таблицы
+        # Draw table
         table_width, table_center_x = self.settings.get_table_layout()
         table.drawOn(canvas_obj, table_center_x, table_y)
 
         new_y = table_y - self.settings.SPACING_LARGE
-        total_vat = subtotal * (vat_rate / 100)
+        total_vat = subtotal * (vat_rate / Decimal('100'))
         
         return subtotal, total_vat, new_y 

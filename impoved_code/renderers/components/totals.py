@@ -1,27 +1,28 @@
 from reportlab.pdfgen import canvas
-from ...config.settings import InvoiceSettings
+from decimal import Decimal
+from impoved_code.config.settings import InvoiceSettings
 
 
 class TotalsRenderer:
-    """Рендерер итогов"""
+    """Renderer for totals"""
     
     def __init__(self, settings: InvoiceSettings):
         self.settings = settings
 
-    def draw(self, canvas_obj: canvas.Canvas, subtotal: float, total_vat: float, vat_rate: float, currency: str, table_end_y: float) -> float:
+    def draw(self, canvas_obj: canvas.Canvas, subtotal: Decimal, total_vat: Decimal, vat_rate: Decimal, currency: str, table_end_y: float) -> float:
         """
-        Отрисовка итогов
+        Draw totals
         
         Args:
-            canvas_obj: Canvas для отрисовки
-            subtotal: Сумма без НДС
-            total_vat: Сумма НДС
-            vat_rate: Ставка НДС
-            currency: Символ валюты
-            table_end_y: Y-координата конца таблицы
+            canvas_obj: Canvas for drawing
+            subtotal: Amount without VAT
+            total_vat: VAT amount
+            vat_rate: VAT rate
+            currency: Currency symbol
+            table_end_y: Y coordinate of table end
             
         Returns:
-            float: Y-координата для следующего элемента
+            float: Y coordinate for next element
         """
         total = subtotal + total_vat
         totals_y = table_end_y
@@ -31,23 +32,23 @@ class TotalsRenderer:
         totals_start_x = table_center_x + self.settings.TABLE_COL_WIDTHS[0]
         totals_end_x = table_center_x + table_width
 
-        # Линия над итогами
+        # Line above totals
         canvas_obj.line(totals_start_x, totals_y, totals_end_x, totals_y)
 
-        # Сумма без НДС
+        # Amount without VAT
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_NORMAL)
         canvas_obj.setFillColor(self.settings.PRIMARY_COLOR)
         canvas_obj.drawString(
             totals_start_x, totals_y - self.settings.SPACING_LARGE, f"Сума без ПДВ:"
         )
         
-        # НДС
+        # VAT
         canvas_obj.setFillColor(self.settings.TEXT_COLOR)
         canvas_obj.drawString(
             totals_start_x, totals_y - self.settings.SPACING_LARGE * 2, f"ПДВ {vat_rate}%:"
         )
 
-        # Линия перед итогом
+        # Line before total
         canvas_obj.line(
             totals_start_x,
             totals_y - self.settings.SPACING_LARGE * 2.5,
@@ -55,13 +56,13 @@ class TotalsRenderer:
             totals_y - self.settings.SPACING_LARGE * 2.5,
         )
 
-        # Итого
+        # Total
         canvas_obj.setFont(self.settings.BOLD_FONT, self.settings.FONT_SIZE_SUBHEADER)
         canvas_obj.drawString(
             totals_start_x, totals_y - self.settings.SPACING_LARGE * 3.5, "Всього:"
         )
 
-        # Суммы справа
+        # Amounts on the right
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_NORMAL)
         canvas_obj.setFillColor(self.settings.TEXT_COLOR)
         canvas_obj.drawRightString(

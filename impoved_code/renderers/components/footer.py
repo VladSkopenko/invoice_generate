@@ -1,33 +1,32 @@
 from reportlab.pdfgen import canvas
-from ...config.settings import InvoiceSettings
+from impoved_code.config.settings import InvoiceSettings
 
 
 class FooterRenderer:
-    """Рендерер футера"""
+    """Renderer for footer"""
     
     def __init__(self, settings: InvoiceSettings):
         self.settings = settings
 
     def draw_footer(self, canvas_obj: canvas.Canvas, width: float):
-        """Отрисовка футера"""
+        """Draw footer"""
         table_width, table_center_x = self.settings.get_table_layout()
 
         footer_line_start = table_center_x
         footer_line_end = table_center_x + table_width
 
-        # Линия подвала
         canvas_obj.line(
             footer_line_start, self.settings.MARGIN_BOTTOM, footer_line_end, self.settings.MARGIN_BOTTOM
         )
 
-        # Текст подвала
+        # Footer text
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_FOOTER)
         canvas_obj.setFillColor(self.settings.TEXT_COLOR)
         canvas_obj.drawCentredString(width / 2, self.settings.MARGIN_BOTTOM - 20, self.settings.FOOTER_TEXT)
 
     def draw_payment_communication(self, canvas_obj: canvas.Canvas, invoice_number: str, totals_end_y: float):
-        """Отрисовка назначения платежа"""
-        table_width, table_center_x = self.settings.get_table_layout()
+        """Draw payment purpose"""
+        _, table_center_x = self.settings.get_table_layout()
 
         canvas_obj.setFont(self.settings.NORMAL_FONT, self.settings.FONT_SIZE_NORMAL)
         canvas_obj.drawString(
