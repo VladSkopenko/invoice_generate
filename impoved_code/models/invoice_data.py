@@ -162,6 +162,7 @@ class InvoiceData(BaseModel):
                 "source": "Contract #123",
                 "line_items": [
                     {
+                        "number": 1,
                         "description": "Web Development Services",
                         "quantity": "10.0",
                         "unit_price": "100.00"

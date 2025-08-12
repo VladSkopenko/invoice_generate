@@ -119,7 +119,3 @@ class InvoiceRenderer:
             source,
         ) 
 
-
-if __name__ == "__main__":
-    renderer = InvoiceRenderer()
-    renderer.render(InvoiceData.model_validate_json(open("invoice_data.json").read()), "invoice.pdf")

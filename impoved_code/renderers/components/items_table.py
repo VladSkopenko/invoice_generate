@@ -42,11 +42,13 @@ class ItemsTableRenderer:
         )
 
         # Add line items to table
-        for item in line_items:
+        for index, item in enumerate(line_items, 1):
             amount = item.amount
             subtotal += amount
 
-            description_paragraph = Paragraph(item.description, description_style)
+            # Add automatic numbering to description
+            numbered_description = f"{index}. {item.description}"
+            description_paragraph = Paragraph(numbered_description, description_style)
 
             table_data.append(
                 [
