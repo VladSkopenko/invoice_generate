@@ -1,3 +1,4 @@
+# Перенесено
 class CurrencyMapping:
     CURRENCY_MAPPING = {
         "USD": "$",     

@@ -1,4 +1,5 @@
-from typing import List, Dict, Optional
+# Перенесено
+from typing import List, Dict
 from decimal import Decimal
 from pydantic import BaseModel, Field, computed_field, validator
 from datetime import date, datetime
@@ -133,7 +134,6 @@ class InvoiceData(BaseModel):
             return Decimal(v)
         return v
 
-
     class Config:
         json_schema_extra = {
             "example": {
@@ -162,7 +162,6 @@ class InvoiceData(BaseModel):
                 "source": "Contract #123",
                 "line_items": [
                     {
-                        "number": 1,
                         "description": "Web Development Services",
                         "quantity": "10.0",
                         "unit_price": "100.00"
